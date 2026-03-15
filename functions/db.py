@@ -14,6 +14,6 @@ def ins(b):
 def del(b)
     db = sqlite3.connect("brrbrrpatapim.db")
     g = db.cursor()
-    g.execute(f"DELETE FROM users WHERE expiration <= {b[0]}") #создать индекс, то, что сейчас сильно диск грузит
+    g.execute(f"DELETE FROM users WHERE expiration <= {b[0]}") #создать индекс, то, что сейчас - сильно диск грузит
     db.commit()
     db.close()
