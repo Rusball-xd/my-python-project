@@ -11,9 +11,9 @@ def ins(b):
     g.execute("INSERT INTO users(user, expiration) VALUES(?, ?)", (b[0], b[1]))
     db.commit()
     db.close()
-def del(b)
+def deletee(b):
     db = sqlite3.connect("brrbrrpatapim.db")
     g = db.cursor()
-    g.execute(f"DELETE FROM users WHERE expiration <= {b[0]}") #создать индекс, то, что сейчас - сильно диск грузит
+    g.execute(f"DELETE FROM users WHERE expiration <= {b}") #создать индекс, то, что сейчас - сильно диск грузит
     db.commit()
     db.close()
