@@ -14,6 +14,9 @@ def ins(b):
 def deletee(b):
     db = sqlite3.connect("brrbrrpatapim.db")
     g = db.cursor()
+    g.execute(f"SELECT * FROM users WHERE expiration <= {b}")
+    k = g.fetchall()
     g.execute(f"DELETE FROM users WHERE expiration <= {b}") #создать индекс, то, что сейчас - сильно диск грузит
     db.commit()
     db.close()
+    return k
