@@ -1,11 +1,15 @@
 from functions import db
-import subprocess
+#import subprocess
 import time
-subprocess.run(['python3', 'server.py'])
+import requests
+import json
+
 try:
     db.start_db()
 except:
     pass
 while True:
-    db.deletee(int(time.time()))
+    k = db.deletee(int(time.time()))
+    k = json.dumps(k)
+    response = requests.post('http://10.9.0.1:433/xes', data=k)
     time.sleep(600)
