@@ -11,5 +11,6 @@ except:
 while True:
     k = db.deletee(int(time.time()))
     k = json.dumps(k)
+    print(k)
     response = requests.post('http://10.9.0.1:433/xes', data=k)
     time.sleep(600)
