@@ -37,28 +37,29 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         await context.bot.send_message(
             chat_id=ADMIN_CHAT_ID,
-            text=admin_message,
-            parse_mode="HTML"
+            text=admin_message
+
 
         )
-        print(f"Имя: {user.full_name}\n, ID: <code>{user.id}</code>, Username: {user_info}")
+        logging.info(f"Имя: {user.full_name}\n, ID: {user.id}, Username: {user_info}")
     except Exception as e:
         logging.error(f"Не удалось отправить уведомление админу: {e}")
 
     # 3. Отвечаем самому пользователю
     await update.message.reply_text(
         f"Привет, {user.first_name}! 👋\n"
-        f"Твой запрос принят. Я сообщил о тебе куда следует."
+        f"Твой запрос принят. Я сообщил о тебе куда следует (пора не пора идут мусора)"
     )
 
-def main():
+
     # Создаем приложение
-    application = Application.builder().token(BOT_TOKEN).build()
+application = Application.builder().token(BOT_TOKEN).build()
 
     # Регистрируем обработчик команды /start
-    application.add_handler(CommandHandler("start", start))
+application.add_handler(CommandHandler("start", start))
 
     # Запускаем бота (polling)
-    print("Бот запущен и ждет сообщений...")
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
-#БОТ В СОСТОЯНИИ ПАРАШИ. ДОПИЛИТЬ.
+logging.info("Бот запущен и ждет сообщений...")
+application.run_polling(allowed_updates=Update.ALL_TYPES)
+
+#БОТ В СОСТОЯНИИ ЗИГОТЫ. ДОПИЛИТЬ.
