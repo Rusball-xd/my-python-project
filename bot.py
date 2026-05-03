@@ -3,6 +3,7 @@ import os
 import logging
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
+import requests
 load_dotenv()
 # --- НАСТРОЙКИ ---
 BOT_TOKEN = os.getenv("BOT_TOKEN")
