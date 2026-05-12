@@ -4,6 +4,7 @@ import logging
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 import requests
+from functions import db,req
 load_dotenv()
 # --- НАСТРОЙКИ ---
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -19,14 +20,10 @@ if not ADMIN_CHAT_ID:
     raise ValueError("ADMIN_CHAT_ID не найден в переменных окружения!")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    Обработчик команды /start.
-    Отправляет уведомление админу и отвечает пользователю.
-    """
+
     user = update.effective_user
     user_info = f"@{user.username}" if user.username else f"{user.full_name}"
 
-    # 1. Формируем сообщение для админа
     admin_message = (
         f"🚀 Новый пользователь запустил бота!\n"
         f"👤 Имя: {user.full_name}\n"
@@ -38,19 +35,23 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         await context.bot.send_message(
             chat_id=ADMIN_CHAT_ID,
-            text=admin_message
-
-
-        )
+            text=admin_message)
         logging.info(f"Имя: {user.full_name}\n, ID: {user.id}, Username: {user_info}")
     except Exception as e:
         logging.error(f"Не удалось отправить уведомление админу: {e}")
-
     # 3. Отвечаем самому пользователю
+    g = {
+        "user_id": update.effective_user.id
+         "time":(int(time.time())+ 155520000)
+         }
+    await req.send_i(b)
+
     await update.message.reply_text(
         f"Привет, {user.first_name}! 👋\n"
         f"Твой запрос принят. Я сообщил о тебе куда следует (пора не пора идут мусора)"
     )
+
+
 
 
     # Создаем приложение

@@ -2,7 +2,7 @@ import sqlite3
 def start_db():
     db = sqlite3.connect("brrbrrpatapim.db")
     g = db.cursor()
-    g.execute("CREATE TABLE users(user TEXT NOT NULL, expiration  INTEGER NOT NULL)")
+    g.execute("CREATE TABLE users(user INTEGER NOT NULL, expiration  INTEGER NOT NULL)")
     db.commit()
     db.close()
 def ins(b):

@@ -14,13 +14,15 @@ logging.basicConfig(
 def get_data(): #слушает входящие запросы
     data = request.get_json()
     time = data.get("time")
+    subprocess.run()
     #написать subprocess.run, который сначала добавляет пользователя сроком на 1 день, потом в /root/awg/etc/<имяпользователя> изменяет время на то, нужно мне
 @app.route('/time', methods=['POST'])
 def get_data(): #слушает входящие запросы
     data = request.get_json()
     time = data.get("time")
+
     #написать subprocess.run, который пишет в /root/awg/etc/<имяпользователя> время его окончания+время, на которое он продлил подписку
 
 
 
-app.run(host='10.9.0.2', port=5000)
+app.run(host='10.9.0.1', port=5000)
