@@ -41,15 +41,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logging.error(f"Не удалось отправить уведомление админу: {e}")
     # 3. Отвечаем самому пользователю
     g = {
-        "user_id": update.effective_user.id
+        "user_id": update.effective_user.id,
          "time":(int(time.time())+ 155520000)
          }
-    await req.send_i(b)
-
+    b = req.add_i(g)
     await update.message.reply_text(
-        f"Привет, {user.first_name}! 👋\n"
-        f"Твой запрос принят. Я сообщил о тебе куда следует (пора не пора идут мусора)"
-    )
+        f"Привет, {user.first_name}!  у тебя мать шлюха!     )
 
 
 
