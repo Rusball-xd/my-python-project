@@ -1,9 +1,9 @@
 from dotenv import load_dotenv
 import os
 import logging
-from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes
+from telegram import *
 import requests
+from telegram.ext import Application, CommandHandler
 from functions import db,req
 load_dotenv()
 # --- НАСТРОЙКИ ---
@@ -40,18 +40,22 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logging.error(f"Не удалось отправить уведомление админу: {e}")
     # 3. Отвечаем самому пользователю
+    time = (int(time.time())+ 155520000)
     g = {
         "user_id": update.effective_user.id,
-         "time":(int(time.time())+ 155520000)
+         "time":time
          }
-    b = req.add_i(g)
+    k = [user.id, time]
+    db.ins(k)
+    request = req.add_i(json.dumps(g))
+    request = json.loads(request)
     await update.message.reply_text(
-        f"Привет, {user.first_name}!  у тебя мать шлюха!     )
+        f"Привет, {user.first_name}!  у тебя мать шлюха! vpnuri:{request["vpnuri"]}, conf:{request["conf"]}")
 
 
 
 
-    # Создаем приложение
+# Создаем приложение
 application = Application.builder().token(BOT_TOKEN).build()
 
     # Регистрируем обработчик команды /start

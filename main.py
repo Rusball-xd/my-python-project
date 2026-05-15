@@ -1,5 +1,5 @@
 from functions import db
-#import subprocess
+import subprocess
 import time
 import requests
 import json
@@ -8,9 +8,9 @@ try:
     db.start_db()
 except:
     pass
+subprocess.run(["python3", "bot.py"])
 while True:
     k = db.deletee(int(time.time()))
     k = json.dumps(k)
     print(k)
-    response = requests.post('http://10.9.0.1:433/xes', data=k)
     time.sleep(600)
