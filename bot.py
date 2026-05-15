@@ -14,7 +14,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO
 )
-if requests.get('http://10.9.0.1:5000/ping') != 1488:
+if requests.get('http://10.9.0.1:5000/ping').text != '1488':
     raise ValueError("У ТЕБЯ НЕ РАБОТАЕТ СЕРВЕР С ВПН, ДАУН!")
 if not BOT_TOKEN:
     raise ValueError("BOT_TOKEN не найден в переменных окружения!")
@@ -53,7 +53,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     request = req.add_i(json.dumps(g))
     request = json.loads(request)
     await update.message.reply_text(
-        f"Привет, {user.first_name}!  у тебя мать шлюха! vpnuri:{request["vpnuri"]}, conf:{request["conf"]}")
+        f"Привет, {user.first_name}!  vpnuri:{request["vpnuri"]}, conf:{request["conf"]}")
 
 
 
