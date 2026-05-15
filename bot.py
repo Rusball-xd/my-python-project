@@ -5,6 +5,8 @@ from telegram import *
 import requests
 from telegram.ext import Application, CommandHandler
 from functions import db,req
+import time
+import json
 load_dotenv()
 # --- НАСТРОЙКИ ---
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -43,14 +45,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logging.error(f"Не удалось отправить уведомление админу: {e}")
     # 3. Отвечаем самому пользователю
-    time = (int(time.time())+ 155520000)
+    vremya = (int(time.time())+ 155520000)
     g = {
         "user_id": update.effective_user.id,
-         "time":time
+         "time":vremya
          }
-    k = [user.id, time]
+    k = [user.id, vremya]
     db.ins(k)
-    request = req.add_i(json.dumps(g))
+    request = await req.add_i(json.dumps(g))
     request = json.loads(request)
     await update.message.reply_text(
         f"Привет, {user.first_name}!  vpnuri:{request["vpnuri"]}, conf:{request["conf"]}")
