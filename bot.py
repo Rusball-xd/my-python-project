@@ -1,73 +1,108 @@
-from dotenv import load_dotenv
-import os
-import logging
-from telegram import *
-import requests
-from telegram.ext import Application, CommandHandler
-from functions import db,req
-import time
 import json
+import logging
+import os
+import time
+from dotenv import load_dotenv
+import requests
+from telegram import Update
+from telegram.error import TelegramError
+from telegram.ext import Application, CommandHandler, ContextTypes
+
+from functions import db, req
+
 load_dotenv()
-# --- НАСТРОЙКИ ---
+
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-ADMIN_CHAT_ID = int(os.getenv("ADMIN_CHAT_ID", "0"))  # Замените на ваш реальный Telegram ID
-# -----------------
+ADMIN_CHAT_ID_RAW = os.getenv("ADMIN_CHAT_ID", "0")
+
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO
 )
-if requests.get('http://10.9.0.1:5000/ping').text != '1488':
-    raise ValueError("У ТЕБЯ НЕ РАБОТАЕТ СЕРВЕР С ВПН, ДАУН!")
-if not BOT_TOKEN:
-    raise ValueError("BOT_TOKEN не найден в переменных окружения!")
-if not ADMIN_CHAT_ID:
-    raise ValueError("ADMIN_CHAT_ID не найден в переменных окружения!")
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+if not BOT_TOKEN:
+    raise ValueError("BOT_TOKEN is missing in environment variables.")
+
+try:
+    ADMIN_CHAT_ID = int(ADMIN_CHAT_ID_RAW)
+    if ADMIN_CHAT_ID <= 0:
+        raise ValueError
+except ValueError:
+    raise ValueError("ADMIN_CHAT_ID must be a valid positive integer.")
+
+try:
+    response = requests.get('http://10.9.0.1:5000/ping', timeout=5.0)
+    response.raise_for_status()
+    if response.text.strip() != '1488':
+        raise ValueError("VPN server returned an invalid health check token.")
+except (requests.RequestException, ValueError) as server_error:
+    raise ConnectionError(f"VPN health check failed: {server_error}")
+
+
+async def handle_start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not update.effective_user or not update.message:
+        return
 
     user = update.effective_user
-    user_info = f"@{user.username}" if user.username else f"{user.full_name}"
+    username_info = f"@{user.username}" if user.username else user.full_name
 
     admin_message = (
         f"🚀 Новый пользователь запустил бота!\n"
         f"👤 Имя: {user.full_name}\n"
         f"🆔 ID: <code>{user.id}</code>\n"
-        f"📝 Username: {user_info}"
+        f"📝 Username: {username_info}"
     )
 
-    # 2. Отправляем уведомление на указанный ID
     try:
         await context.bot.send_message(
             chat_id=ADMIN_CHAT_ID,
-            text=admin_message
-            )
-        logging.info(f"Имя: {user.full_name}\n, ID: {user.id}, Username: {user_info}")
-    except Exception as e:
-        logging.error(f"Не удалось отправить уведомление админу: {e}")
-    # 3. Отвечаем самому пользователю
-    vremya = (int(time.time())+ 155520000)
-    g = {
-        "user_id": update.effective_user.id,
-         "time":vremya
-         }
-    k = [user.id, vremya]
-    db.ins(k)
-    request = await req.add_i(json.dumps(g))
-    request = json.loads(request)
-    await update.message.reply_text(
-        f"Привет, {user.first_name}!  vpnuri:{request["vpnuri"]}, conf:{request["conf"]}")
+            text=admin_message,
+            parse_mode="HTML"
+        )
+        logging.info("Notification sent for User ID: %s", user.id)
+    except TelegramError as telegram_err:
+        logging.error("Failed to notify admin via Telegram: %s", telegram_err)
+
+    expiration_timestamp = int(time.time()) + 155_520_000
+    user_payload = {
+        "user_id": user.id,
+        "time": expiration_timestamp
+    }
+
+    try:
+        db.ins([user.id, expiration_timestamp])
+    except Exception as db_err:
+        logging.error("Database insertion failed for user %s: %s", user.id, db_err)
+        await update.message.reply_text("Произошла ошибка при регистрации. Попробуйте позже.")
+        return
+
+    try:
+        serialized_payload = json.dumps(user_payload)
+        api_response_raw = await req.add_i(serialized_payload)
+        
+        if not api_response_raw:
+            raise ValueError("Empty response received from API.")
+            
+        api_response = json.loads(api_response_raw)
+        
+        vpn_uri = api_response.get("vpnuri", "N/A")
+        vpn_conf = api_response.get("conf", "N/A")
+        
+        await update.message.reply_text(
+            f"Привет, {user.first_name}! vpnuri: {vpn_uri}, conf: {vpn_conf}"
+        )
+    except (json.JSONDecodeError, TypeError, KeyError, ValueError) as api_err:
+        logging.error("API configuration fetching failed for user %s: %s", user.id, api_err)
+        await update.message.reply_text("Не удалось сгенерировать конфигурацию VPN. Обратитесь к администратору.")
 
 
+def main() -> None:
+    application = Application.builder().token(BOT_TOKEN).build()
+    application.add_handler(CommandHandler("start", handle_start_command))
+    
+    logging.info("Бот запущен и ждет сообщений...")
+    application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
-# Создаем приложение
-application = Application.builder().token(BOT_TOKEN).build()
-
-    # Регистрируем обработчик команды /start
-application.add_handler(CommandHandler("start", start))
-
-    # Запускаем бота (polling)
-logging.info("Бот запущен и ждет сообщений...")
-application.run_polling(allowed_updates=Update.ALL_TYPES)
-
-#БОТ В СОСТОЯНИИ ЗИГОТЫ. ДОПИЛИТЬ.
+if __name__ == "__main__":
+    main()
