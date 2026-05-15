@@ -28,6 +28,9 @@ def get_data(): #слушает входящие запросы
         "conf":conf
         }
     return jsonify(result)
+@app.route('/ping', methods=['GET'])
+def pinging():
+    return 1488
 
 
 app.run(host='10.9.0.1', port=5000)

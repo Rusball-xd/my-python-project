@@ -3,7 +3,7 @@ import subprocess
 import time
 import requests
 import json
-
+import logging
 try:
     db.start_db()
 except:

@@ -14,6 +14,8 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO
 )
+if requests.get('http://10.9.0.1:5000/ping') != 1488:
+    raise ValueError("У ТЕБЯ НЕ РАБОТАЕТ СЕРВЕР С ВПН, ДАУН!")
 if not BOT_TOKEN:
     raise ValueError("BOT_TOKEN не найден в переменных окружения!")
 if not ADMIN_CHAT_ID:
@@ -35,7 +37,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         await context.bot.send_message(
             chat_id=ADMIN_CHAT_ID,
-            text=admin_message)
+            text=admin_message
+            )
         logging.info(f"Имя: {user.full_name}\n, ID: {user.id}, Username: {user_info}")
     except Exception as e:
         logging.error(f"Не удалось отправить уведомление админу: {e}")
