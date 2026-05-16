@@ -3,14 +3,16 @@ import os
 import logging
 from telegram import *
 import requests
-from telegram.ext import Application, CommandHandler
+from telegram.ext import Application, CommandHandler, ConversationHandler, MessageHandler, filters
 from functions import db,req
 import time
 import json
 load_dotenv()
+ASK_PASWD = 1
 # --- НАСТРОЙКИ ---
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_CHAT_ID = int(os.getenv("ADMIN_CHAT_ID", "0"))  # Замените на ваш реальный Telegram ID
+PASWD = os.getenv("PASSWORD")
 # -----------------
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -46,20 +48,32 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logging.error(f"Не удалось отправить уведомление админу: {e}")
     # 3. Отвечаем самому пользователю
     if db.search(user.id) == None:
-        vremya = (int(time.time())+ 155520000)
-        g = {
-            "user_id": update.effective_user.id,
-            "time":vremya
-            }
-        k = [user.id, vremya]
-        db.ins(k)
-        request = await req.add_i(g)
-        await update.message.reply_text(
-            f"Привет, {user.first_name}!  vpnuri:  {request["vpnuri"]}, conf:  {request["conf"]}")
+        await update.message.reply_text("Введи пароль. без него не пущу - или введи рандомную х  ню, чтобы отменить")
+        logging.info(f"незарегистрированный пользователь {user.id} нажал /start")
+        return ASK_PASWD
     else:
         await update.message.reply_text(
             f"Привет, {user.first_name}! ты уже зарегистрирован, не спамь, иначе заспамлю пинками твою мать!")
-
+async def get_paswd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    paswd=update.message.text
+    vremya = (int(time.time())+ 155520000)
+    g = {
+        "user_id": update.effective_user.id,
+        "time":vremya
+        }
+    k = [user.id, vremya]
+    db.ins(k)
+    request = await req.add_i(g)
+    await update.message.reply_text(
+        f"Привет, {user.first_name}!  vpnuri:  {request["vpnuri"]}, conf:  {request["conf"]}")
+    logging.info(f"пользователь {user.id} ввел пароль и зарегался")
+    return ConversationHandler.END
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "Ты решил отменить ввод пароля"
+    )
+    return ConversationHandler.END
 
 
 
@@ -67,10 +81,21 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 application = Application.builder().token(BOT_TOKEN).build()
 
     # Регистрируем обработчик команды /start
-application.add_handler(CommandHandler("start", start))
+conv_handler = ConversationHandler(
+        # Точка входа в диалог (команда /start)
+        entry_points=[CommandHandler('start', start)],
+        # Состояния и обработчики для каждого состояния
+        states={
+            ASK_PASWD: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_paswd)],
+
+        },
+        fallbacks=[CommandHandler('cancel', cancel)],
+        # Обработчики на случай выхода из диалога (например, команда /cancel)
+    )
 
     # Запускаем бота (polling)
 logging.info("Бот запущен и ждет сообщений...")
+application.add_handler(conv_handler)
 application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 #БОТ В СОСТОЯНИИ ЗИГОТЫ. ДОПИЛИТЬ.
