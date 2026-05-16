@@ -45,17 +45,20 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logging.error(f"Не удалось отправить уведомление админу: {e}")
     # 3. Отвечаем самому пользователю
-    vremya = (int(time.time())+ 155520000)
-    g = {
-        "user_id": update.effective_user.id,
-         "time":vremya
-         }
-    k = [user.id, vremya]
-    db.ins(k)
-    request = await req.add_i(g)
-    request = json.loads(request)
-    await update.message.reply_text(
-        f"Привет, {user.first_name}!  vpnuri:{request["vpnuri"]}, conf:{request["conf"]}")
+    if db.search(user.id) == None:
+        vremya = (int(time.time())+ 155520000)
+        g = {
+            "user_id": update.effective_user.id,
+            "time":vremya
+            }
+        k = [user.id, vremya]
+        db.ins(k)
+            request = await req.add_i(g)
+        await update.message.reply_text(
+            f"Привет, {user.first_name}!  vpnuri:  {request["vpnuri"]}, conf:  {request["conf"]}")
+    else:
+        await update.message.reply_text(
+            f"Привет, {user.first_name}! ты уже зарегистрирован, не спамь, иначе заспамлю ударами твою мать!"
 
 
 
