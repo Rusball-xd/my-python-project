@@ -53,12 +53,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             }
         k = [user.id, vremya]
         db.ins(k)
-            request = await req.add_i(g)
+        request = await req.add_i(g)
         await update.message.reply_text(
             f"Привет, {user.first_name}!  vpnuri:  {request["vpnuri"]}, conf:  {request["conf"]}")
     else:
         await update.message.reply_text(
-            f"Привет, {user.first_name}! ты уже зарегистрирован, не спамь, иначе заспамлю ударами твою мать!"
+            f"Привет, {user.first_name}! ты уже зарегистрирован, не спамь, иначе заспамлю пинками твою мать!")
 
 
 

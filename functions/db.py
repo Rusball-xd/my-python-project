@@ -22,6 +22,7 @@ def deletee(b):
 def search(b):
     conn = sqlite3.connect("brrbrrpatapim.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE user = ?", (b))
+    cursor.execute("SELECT * FROM users WHERE user = ?", (b,))
     result = cursor.fetchone()
-    db.close()
+    conn.close()
+    return result
