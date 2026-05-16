@@ -52,7 +52,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
          }
     k = [user.id, vremya]
     db.ins(k)
-    request = await req.add_i(json.dumps(g))
+    request = await req.add_i(g)
     request = json.loads(request)
     await update.message.reply_text(
         f"Привет, {user.first_name}!  vpnuri:{request["vpnuri"]}, conf:{request["conf"]}")
