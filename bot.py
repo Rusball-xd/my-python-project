@@ -4,9 +4,14 @@ import logging
 from telegram import *
 import requests
 from telegram.ext import Application, CommandHandler, ConversationHandler, MessageHandler, filters
-from functions import db,req
+from functions import db
 import time
 import json
+async def add_i(b):
+    g = requests.post('http://10.9.0.1:5000/add', json=b).json()
+    return g
+
+
 load_dotenv()
 ASK_PASWD = 1
 # --- НАСТРОЙКИ ---
@@ -64,7 +69,7 @@ async def get_paswd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         }
     k = [user.id, vremya]
     db.ins(k)
-    request = await req.add_i(g)
+    request = await add_i(g)
     await update.message.reply_text(
         f"Привет, {user.first_name}!  vpnuri:  {request["vpnuri"]}, conf:  {request["conf"]}")
     logging.info(f"пользователь {user.id} ввел пароль и зарегался")
