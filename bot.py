@@ -36,7 +36,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_info = f"@{user.username}" if user.username else f"{user.full_name}"
 
     admin_message = (
-        f"🚀 Новый пользователь запустил бота!\n"
+        f"🚀  пользователь запустил бота!\n"
         f"👤 Имя: {user.full_name}\n"
         f"🆔 ID: <code>{user.id}</code>\n"
         f"📝 Username: {user_info}"
@@ -62,18 +62,22 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def get_paswd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     paswd=update.message.text
-    vremya = (int(time.time())+ 155520000)
-    g = {
-        "user_id": update.effective_user.id,
-        "time":vremya
-        }
-    k = [user.id, vremya]
-    db.ins(k)
-    request = await add_i(g)
-    await update.message.reply_text(
-        f"Привет, {user.first_name}!  vpnuri:  {request["vpnuri"]}, conf:  {request["conf"]}")
-    logging.info(f"пользователь {user.id} ввел пароль и зарегался")
-    return ConversationHandler.END
+    if paswd == PASWD:
+        vremya = (int(time.time())+ 155520000)
+        g = {
+            "user_id": update.effective_user.id,
+            "time":vremya
+            }
+        k = [user.id, vremya]
+        db.ins(k)
+        request = await add_i(g)
+        await update.message.reply_text(
+            f"Привет, {user.first_name}!  vpnuri:  {request["vpnuri"]}, conf:  {request["conf"]}")
+        logging.info(f"пользователь {user.id} ввел пароль и зарегался")
+        return ConversationHandler.END
+    else:
+        await update.message.reply_text("У тебя сдохла мать, ты ввел не то")
+        return ConversationHandler.END
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "Ты решил отменить ввод пароля"
@@ -103,4 +107,3 @@ logging.info("Бот запущен и ждет сообщений...")
 application.add_handler(conv_handler)
 application.run_polling(allowed_updates=Update.ALL_TYPES)
 
-#БОТ В СОСТОЯНИИ ЗИГОТЫ. ДОПИЛИТЬ.
