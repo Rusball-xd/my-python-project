@@ -1,17 +1,19 @@
 from dotenv import load_dotenv
 import os
 import logging
-from telegram import *
 import requests
-from telegram.ext import Application, CommandHandler, ConversationHandler, MessageHandler, filters
 from functions import db
 import time
 import json
+from aiogram import Bot, Dispatcher
+from aiogram.types import Message        # [1]
+import asyncio                           # [1]
+
 async def add_i(b):
     g = requests.post('http://10.9.0.1:5000/add', json=b).json()
     return g
 
-
+dp = Dispatcher()
 load_dotenv()
 ASK_PASWD = 1
 # --- НАСТРОЙКИ ---
@@ -23,87 +25,42 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO
 )
-if requests.get('http://10.9.0.1:5000/ping').text != '1488':
-    raise ValueError("У ТЕБЯ НЕ РАБОТАЕТ СЕРВЕР С ВПН, ДАУН!")
+#if requests.get('http://10.9.0.1:5000/ping').text != '1488':
+#    raise ValueError("У ТЕБЯ НЕ РАБОТАЕТ СЕРВЕР С ВПН, ДАУН!")
 if not BOT_TOKEN:
     raise ValueError("BOT_TOKEN не найден в переменных окружения!")
 if not ADMIN_CHAT_ID:
     raise ValueError("ADMIN_CHAT_ID не найден в переменных окружения!")
+import asyncio                           # [1]
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    user = update.effective_user
-    user_info = f"@{user.username}" if user.username else f"{user.full_name}"
+dp = Dispatcher()                        # [2]
 
-    admin_message = (
-        f"🚀  пользователь запустил бота!\n"
-        f"👤 Имя: {user.full_name}\n"
-        f"🆔 ID: <code>{user.id}</code>\n"
-        f"📝 Username: {user_info}"
-    )
 
-    # 2. Отправляем уведомление на указанный ID
+@dp.message()                            # [3]
+async def any_message(                   # [4]
+        message: Message,                # [5]
+):
+    await message.answer("Hello world!") # [6]
+
+
+async def main():
+    token = BOT_TOKEN          # [7]
+    if not token:                        # [7]
+        error = "No token provided"      # [7]
+        raise ValueError(error)          # [7]
+    bot = Bot(token=token)               # [8]
+
+    print("Starting bot...")
     try:
-        await context.bot.send_message(
-            chat_id=ADMIN_CHAT_ID,
-            text=admin_message
-            )
-        logging.info(f"Имя: {user.full_name}\n, ID: {user.id}, Username: {user_info}")
-    except Exception as e:
-        logging.error(f"Не удалось отправить уведомление админу: {e}")
-    # 3. Отвечаем самому пользователю
-    if db.search(user.id) == None:
-        await update.message.reply_text("Введи пароль. без него не пущу - или введи рандомную х  ню, чтобы отменить")
-        logging.info(f"незарегистрированный пользователь {user.id} нажал /start")
-        return ASK_PASWD
-    else:
-        await update.message.reply_text(
-            f"Привет, {user.first_name}! ты уже зарегистрирован, не спамь, иначе заспамлю пинками твою мать!")
-async def get_paswd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user
-    paswd=update.message.text
-    if paswd == PASWD:
-        vremya = (int(time.time())+ 155520000)
-        g = {
-            "user_id": update.effective_user.id,
-            "time":vremya
-            }
-        k = [user.id, vremya]
-        db.ins(k)
-        request = await add_i(g)
-        await update.message.reply_text(
-            f"Привет, {user.first_name}!  vpnuri:  {request["vpnuri"]}, conf:  {request["conf"]}")
-        logging.info(f"пользователь {user.id} ввел пароль и зарегался")
-        return ConversationHandler.END
-    else:
-        await update.message.reply_text("У тебя сдохла мать, ты ввел не то")
-        return ConversationHandler.END
-async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "Ты решил отменить ввод пароля"
-    )
-    return ConversationHandler.END
+        await dp.start_polling(bot)      # [9]
+    finally:
+        print("Bot stopped")
 
 
-
-# Создаем приложение
-application = Application.builder().token(BOT_TOKEN).build()
-
-    # Регистрируем обработчик команды /start
-conv_handler = ConversationHandler(
-        # Точка входа в диалог (команда /start)
-        entry_points=[CommandHandler('start', start)],
-        # Состояния и обработчики для каждого состояния
-        states={
-            ASK_PASWD: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_paswd)],
-
-        },
-        fallbacks=[CommandHandler('cancel', cancel)],
-        # Обработчики на случай выхода из диалога (например, команда /cancel)
-    )
+asyncio.run(main())
 
     # Запускаем бота (polling)
 logging.info("Бот запущен и ждет сообщений...")
-application.add_handler(conv_handler)
-application.run_polling(allowed_updates=Update.ALL_TYPES)
+
 
