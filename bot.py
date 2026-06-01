@@ -4,7 +4,7 @@ import logging
 from telegram import *
 import requests
 from telegram.ext import Application, CommandHandler, ConversationHandler, MessageHandler, filters
-from functions import db
+import db
 import time
 import json
 async def add_i(b):
@@ -31,8 +31,10 @@ if not ADMIN_CHAT_ID:
     raise ValueError("ADMIN_CHAT_ID не найден в переменных окружения!")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
-    user = update.effective_user
+    if requests.get('http://10.9.0.1:5000/ping').text != '1488':
+        raise ValueError("У ТЕБЯ НЕ РАБОТАЕТ СЕРВЕР С ВПН, ДАУН!")
+        await context.bot.send.message( chat_id = user.id, text="Ведутся техработы, крайне извиняюсь
+        user = update.effective_user
     user_info = f"@{user.username}" if user.username else f"{user.full_name}"
 
     admin_message = (

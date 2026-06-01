@@ -24,7 +24,9 @@ def get_data(): #слушает входящие запросы
                 "--expires=1d"
             ])
     #написать subprocess.run, который сначала добавляет пользователя сроком на 1 день, потом в /root/awg/expiry/<имяпользователя> изменяет время на то, нужно мне
-    subprocess.run(f"echo \"{time}\" > /root/awg/expiry/{user_id}", shell=True)
+#    subprocess.run(f"echo \"{time}\" > /root/awg/expiry/{user_id}", shell=True)
+    with open(f'/root/awg/expiry/{user_id}', 'w', encoding='utf-8'l as f:
+	file.write(time)
     with open(f'/root/awg/{user_id}.vpnuri', 'r', encoding='utf-8') as f:
         vpnuri = f.read()
     with open(f'/root/awg/{user_id}.conf', 'r', encoding='utf-8') as f:
