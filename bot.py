@@ -66,7 +66,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def get_paswd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     paswd=update.message.text
-    time_v = (int(time.time())+ 155520000)
+    time_v = (int(time.time())+ DEFAULT_TIME)
     pload= {
         "user_id": update.effective_user.id,
         "time":time_v
