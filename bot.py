@@ -7,15 +7,16 @@ from telegram.ext import Application, CommandHandler, ConversationHandler, Messa
 import db
 import time
 import json
-async def add_i(b):
-    g = requests.post('http://10.9.0.1:5000/add', json=b).json()
-    return g
+async def add_i(pload):
+    post = requests.post('http://10.9.0.1:5000/add', json=pload).json()
+    return post
 
 
 load_dotenv()
 ASK_PASWD = 1
 # --- НАСТРОЙКИ ---
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+DEFAULT_TIME=os.getenv("DEFAULT_TIME")
 ADMIN_CHAT_ID = int(os.getenv("ADMIN_CHAT_ID", "0"))  # Замените на ваш реальный Telegram ID
 PASWD = os.getenv("PASSWORD")
 # -----------------
@@ -23,8 +24,8 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO
 )
-if requests.get('http://10.9.0.1:5000/ping').text != '1488':
-    raise ValueError("У ТЕБЯ НЕ РАБОТАЕТ СЕРВЕР С ВПН, ДАУН!")
+#if requests.get('http://10.9.0.1:5000/ping').text != '1488':
+ #   raise ValueError("У ТЕБЯ НЕ РАБОТАЕТ СЕРВЕР С ВПН, ДАУН!")
 if not BOT_TOKEN:
     raise ValueError("BOT_TOKEN не найден в переменных окружения!")
 if not ADMIN_CHAT_ID:
@@ -33,8 +34,9 @@ if not ADMIN_CHAT_ID:
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if requests.get('http://10.9.0.1:5000/ping').text != '1488':
         raise ValueError("У ТЕБЯ НЕ РАБОТАЕТ СЕРВЕР С ВПН, ДАУН!")
-        await context.bot.send.message( chat_id = user.id, text="Ведутся техработы, крайне извиняюсь
-        user = update.effective_user
+        await context.bot.send_message( chat_id = user.id, text="Ведутся техработы, крайне извиняюсь. подождите немного и попробуйте снова")
+        return
+    user = update.effective_user
     user_info = f"@{user.username}" if user.username else f"{user.full_name}"
 
     admin_message = (
@@ -64,14 +66,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def get_paswd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     paswd=update.message.text
-    vremya = (int(time.time())+ 155520000)
-    g = {
+    time_v = (int(time.time())+ 155520000)
+    pload= {
         "user_id": update.effective_user.id,
-        "time":vremya
+        "time":time_v
         }
-    k = [user.id, vremya]
-    db.ins(k)
-    request = await add_i(g)
+    db_data = [user.id, time_v]
+    db.ins(db_data)
+    request = await add_i(pload)
     await update.message.reply_text(
         f"Привет, {user.first_name}!  vpnuri:  {request["vpnuri"]}, conf:  {request["conf"]}")
     logging.info(f"пользователь {user.id} ввел пароль и зарегался")
