@@ -2,7 +2,7 @@ import sqlite3
 
 
 def start_db():
-    db = sqlite3.connect("brrbrrpatapim.db")
+    db = sqlite3.connect("main.db")
     g = db.cursor()
     g.execute(
         "CREATE TABLE IF NOT EXISTS users(user INTEGER NOT NULL, expiration INTEGER NOT NULL)")
@@ -11,7 +11,7 @@ def start_db():
 
 
 def ins(data):
-    db = sqlite3.connect("brrbrrpatapim.db")
+    db = sqlite3.connect("main.db")
     g = db.cursor()
     g.execute("INSERT INTO users(user, expiration) VALUES(?, ?)",
               (data[0], data[1]))
@@ -20,7 +20,7 @@ def ins(data):
 
 
 def deletee(data):
-    db = sqlite3.connect("brrbrrpatapim.db")
+    db = sqlite3.connect("main.db")
     g = db.cursor()
     g.execute(f"SELECT * FROM users WHERE expiration <= ?", (data, ))
     k = g.fetchall()
@@ -31,7 +31,7 @@ def deletee(data):
 
 
 def search(data):
-    conn = sqlite3.connect("brrbrrpatapim.db")
+    conn = sqlite3.connect("main.db")
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM users WHERE user = ?", (data,))
     result = cursor.fetchone()

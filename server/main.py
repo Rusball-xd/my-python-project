@@ -24,8 +24,8 @@ def get_data():  # слушает входящие запросы
                 str(user_id),
                 "--expires=1d"
             ])
-    with open(f'/root/awg/expiry/{user_id}', 'w', encoding='utf-8'l as f:
-        f.write(time)
+    with open(f'/root/awg/expiry/{user_id}', 'w', encoding='utf-8') as f:
+        f.write(str(time))
     with open(f'/root/awg/{user_id}.vpnuri', 'r', encoding='utf-8') as f:
         vpnuri=f.read()
     with open(f'/root/awg/{user_id}.conf', 'r', encoding='utf-8') as f:

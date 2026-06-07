@@ -89,19 +89,20 @@ async def get_paswd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "user_id": update.effective_user.id,
         "time": time_v
     }
-    db_data = [user.id, time_v]
-    db.ins(db_data)
-    request = await add_i(pload)
-    if isinstance(request, Exception):
-        await update.message.reply_text("Ведутся техработы. извиняюсь и стою на коленях. попробуйте позже")
-        logging.error("сервер с vpn недоступен")
-    else:
-        if paswd == PASWD:
+    if paswd == PASWD:
+        request = await add_i(pload)
+        if isinstance(request, Exception):
+            await update.message.reply_text("Ведутся техработы, сервер с vpn недоступен. извиняюсь и стою на коленях. попробуйте позже")
+            logging.error("сервер с vpn недоступен")
+        else:
             await update.message.reply_text(
                 f"vpnuri:  {request["vpnuri"]}, conf:  {request["conf"]}")
             logging.info(f"пользователь {user.id} ввел пароль и зарегался")
-        else:
-            await update.message.reply_text("ты ввел неверный пароль")
+            db_data = [user.id, time_v]
+            db.ins(db_data)
+
+    else:
+        await update.message.reply_text("ты ввел неверный пароль")
     return ConversationHandler.END
 
 
@@ -111,16 +112,20 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return ConversationHandler.END
 
-
+async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "Ты можешь купить здесь vpn. закинь мне деньги на карту и я тебе скажу пароль от бота!"
+    )
 # Создаем приложение
 application = Application.builder().token(BOT_TOKEN).build()
 
 # Регистрируем обработчик команды /start
 conv_handler = ConversationHandler(
-    entry_points=[CommandHandler('start', start)],
+    entry_points=[CommandHandler('start', start), CommandHandler('help', help)],
     # Состояния и обработчики для каждого состояния
     states={
         ASK_PASWD: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_paswd)],
+
 
     },
     fallbacks=[CommandHandler('cancel', cancel)],
