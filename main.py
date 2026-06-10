@@ -1,14 +1,15 @@
 import db
 import subprocess
 import time
+import requests
 import json
-
-
-db.start_db()
+try:
+    db.start_db()
+except:
+    pass
 subprocess.run(["python3", "bot.py"])
 while True:
-    try:
-        k= db.deletee(int(time.time()))
-    except:
-        pass
+    k = db.deletee(int(time.time()))
+    k = json.dumps(k)
+    print(k)
     time.sleep(600)
